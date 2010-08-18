@@ -55,7 +55,9 @@ def get_title(subject, metadata):
     """ Returns the dc:title for the subject """
     if subject not in metadata['subjects']:
         return None
-    title = metadata['triples'][subject].get( DC('title') ) or None
+    title = metadata['triples'][subject].get( DCT('title') ) or \
+            metadata['triples'][subject].get( DC('title') ) or \
+            None
     if title:
         return title[0]
     else:
