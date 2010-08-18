@@ -1,4 +1,4 @@
-## Copyright (c) 2007-2008 Nathan R. Yergler, Creative Commons
+## Copyright (c) 2007-2008 Nathan R. Yergler, John E. Doig III Creative Commons
 
 ## Permission is hereby granted, free of charge, to any person obtaining
 ## a copy of this software and associated documentation files (the "Software"),
@@ -67,9 +67,9 @@ setup(
     test_suite = 'nose.collector',
 
     # author metadata
-    author = 'Nathan R. Yergler',
-    author_email = 'nathan@creativecommons.org',
-    description = 'Attribution metadata extractor.',
+    author = 'Nathan R. Yergler, John E. Doig III',
+    author_email = 'nathan@creativecommons.org, john@creativecommons.org',
+    description = 'CCREL metadata extractor.',
     license = 'MIT',
     url = 'http://creativecommons.org/license',
 
