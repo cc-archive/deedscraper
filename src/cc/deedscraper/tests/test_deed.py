@@ -82,14 +82,14 @@ class AttributionMetadataTests (unittest.TestCase):
     def test_attribution_notices_attribution_name_only(self):
         
         results = self.app.get(
-            '/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution_name_only.html',
+            '/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_name_only.html',
             headers=REFERER)
         
         results = json.loads(results.body)
 
         self.assertEqual(
             results['attribution']['marking'],
-            '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/metadata_scraper/attribution_name_only.html"><span property="cc:attributionName">Example</span> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
+            '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/deedscraper/attribution_name_only.html"><span property="cc:attributionName">Example</span> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
 
         self.assertEqual(results['attribution']['details'], '')
     
@@ -116,13 +116,13 @@ class AttributionMetadataTests (unittest.TestCase):
     def test_attribution_marking_atribution_url_only(self):
         
         results = self.app.get(
-            '/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution_url_only.html',
+            '/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_url_only.html',
             headers=REFERER)
         results = json.loads(results.body)
 
         self.assertEqual(
             results['attribution']['marking'],
-            '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/metadata_scraper/attribution_url_only.html"><a rel="cc:attributionURL" href="http://example.com">http://example.com</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
+            '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/deedscraper/attribution_url_only.html"><a rel="cc:attributionURL" href="http://example.com">http://example.com</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
 
         self.assertEqual(results['attribution']['details'], '')
 
@@ -130,13 +130,13 @@ class AttributionMetadataTests (unittest.TestCase):
         """ Attribution details provided when attribURL and attribName are
         scraped. """
 
-        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution.html',
+        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution.html',
                                headers=REFERER)
         print results.body
         notices = json.loads(results.body)
         
         self.assertEqual(notices['attribution']['marking'],
-                         '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/metadata_scraper/attribution.html"><a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
+                         '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/deedscraper/attribution.html"><a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
         self.assertEqual(notices['attribution']['details'],
                          'You must attribute this work to <a href="http://example.com">Example</a> (with link).')
 
@@ -164,7 +164,7 @@ class AttributionMetadataTests (unittest.TestCase):
 
     def test_attribution_non_referring_licensed_subject(self):
         
-        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution_external.html',
+        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_external.html',
                                headers=REFERER)
         notices = json.loads(results.body)
         
@@ -200,7 +200,7 @@ class AttributionMetadataTests (unittest.TestCase):
     def test_multiple_attributions(self):
         """ If multiple attribution assertions exists, do not return anything """
 
-        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution_multiple.html',
+        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_multiple.html',
                                headers=REFERER)
         notices = json.loads(results.body)
         
@@ -211,11 +211,11 @@ class AttributionMetadataTests (unittest.TestCase):
         """ Include the dc:title of the work in the attribution information if
         there exists a triple for the dc:title property """
         
-        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/metadata_scraper/attribution_title.html',
+        results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_title.html',
                                headers=REFERER)
         notices = json.loads(results.body)
         self.assertEqual(notices['attribution']['marking'],
-                         '<div xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/" about="http://code.creativecommons.org/tests/metadata_scraper/attribution_title.html"><span property="dct:title">Example Title</span> (<a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a>) / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
+                         '<div xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/" about="http://code.creativecommons.org/tests/deedscraper/attribution_title.html"><span property="dct:title">Example Title</span> (<a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a>) / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
         self.assertEqual(notices['attribution']['details'],
                          'You must attribute Example Title to <a href="http://example.com">Example</a> (with link).')
 
@@ -548,7 +548,7 @@ class RegistrationTests (unittest.TestCase):
         (e.g. https://creativecommons.net/example/) causing a redirect to
         /example then the registration should still be successful """
 
-        test_url = 'http://code.creativecommons.org/tests/metadata_scraper/work_redirect.html'
+        test_url = 'http://code.creativecommons.org/tests/deedscraper/work_redirect.html'
         response = self.app.get('/triples?url=' + test_url)
         triples = json.loads(response.body)
 
@@ -561,12 +561,12 @@ class RegistrationTests (unittest.TestCase):
         """ Test that the deed call returns HTML describing a work reg """
 
         response = self.app.get(
-            '/deed?url=http://code.creativecommons.org/tests/metadata_scraper/work.html',
+            '/deed?url=http://code.creativecommons.org/tests/deedscraper/work.html',
             headers=REFERER)
         notices = json.loads(response.body)
         print notices
         self.assertEqual(notices['registration'],
-                         '<a href="http://code.creativecommons.org/tests/metadata_scraper/profile.html">Username</a> has registered <a href="http://code.creativecommons.org/tests/metadata_scraper/lookup.html?uri=http://code.creativecommons.org/tests/metadata_scraper/work.html">this work</a> at the <nobr><a href="http://code.creativecommons.org/">Network</a></nobr>')
+                         '<a href="http://code.creativecommons.org/tests/deedscraper/profile.html">Username</a> has registered <a href="http://code.creativecommons.org/tests/deedscraper/lookup.html?uri=http://code.creativecommons.org/tests/deedscraper/work.html">this work</a> at the <nobr><a href="http://code.creativecommons.org/">Network</a></nobr>')
 
         
         
@@ -684,28 +684,28 @@ class MorePermissionsTest (unittest.TestCase):
     def test_more_permissions_html(self):
         """ Check the output of the more permissions html notice """
         response = self.app.get(
-            '/deed?url=http://code.creativecommons.org/tests/metadata_scraper/more_permissions.html',
+            '/deed?url=http://code.creativecommons.org/tests/deedscraper/more_permissions.html',
             headers=REFERER)
         notices = json.loads(response.body)
 
         self.assertEqual(notices['more_permissions'],
-                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=http%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fmetadata_scraper%2Fmore_permissions.html">testing.org</a></strong>.')
+                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=http%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fdeedscraper%2Fmore_permissions.html">testing.org</a></strong>.')
                          
     def test_https_referer(self):
 
         response = self.app.get(
-            '/deed?url=http://code.creativecommons.org/tests/metadata_scraper/more_permissions.html',
+            '/deed?url=http://code.creativecommons.org/tests/deedscraper/more_permissions.html',
             headers=REFERER)
 
         https_response = self.app.get(
-            '/deed?url=https://code.creativecommons.org/tests/metadata_scraper/more_permissions.html',
+            '/deed?url=https://code.creativecommons.org/tests/deedscraper/more_permissions.html',
             headers=REFERER)
 
         notices = json.loads(response.body)
         https_notices = json.loads(https_response.body)
 
         self.assertEqual(notices['more_permissions'],
-                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=http%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fmetadata_scraper%2Fmore_permissions.html">testing.org</a></strong>.')
+                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=http%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fdeedscraper%2Fmore_permissions.html">testing.org</a></strong>.')
 
         self.assertEqual(https_notices['more_permissions'],
-                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=https%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fmetadata_scraper%2Fmore_permissions.html">testing.org</a></strong>.')
+                         '<strong>Permissions beyond</strong> the scope of this public license are available at <strong><a href="http://testing.org?cc-referer=https%3A%2F%2Fcode.creativecommons.org%2Ftests%2Fdeedscraper%2Fmore_permissions.html">testing.org</a></strong>.')

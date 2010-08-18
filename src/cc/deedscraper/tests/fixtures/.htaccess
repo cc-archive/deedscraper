@@ -1,3 +1,3 @@
-Redirect 301 /tests/metadata_scraper/301.html http://creativecommons.org
-Redirect 302 /tests/metadata_scraper/302.html https://creativecommons.net
-Redirect 301 /tests/metadata_scraper/profile_redirect.html /tests/metadata_scraper/profile.html
+Redirect 301 /tests/deedscraper/301.html http://creativecommons.org
+Redirect 302 /tests/deedscraper/302.html https://creativecommons.net
+Redirect 301 /tests/deedscraper/profile_redirect.html /tests/deedscraper/profile.html
