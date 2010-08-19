@@ -13,6 +13,7 @@ SIOC = metadata.SIOC
 SIOC_SERVICE = metadata.SIOC_SERVICE
 DC = metadata.DC
 DCT = metadata.DCT
+FOAF = metadata.FOAF 
 POWDER = metadata.POWDER
 
 REFERER = {'Referer': 'http://creativecommons.org/licenses/by/3.0/us/'}
@@ -236,6 +237,72 @@ class AttributionMetadataTests (unittest.TestCase):
         title = metadata.get_title('http://example.com', triples)
 
         self.assertEqual(title, 'Example Title')
+
+    def test_extracts_foaf_attribution_name(self):
+        """ If cc:attributionName doesn't exist, but the is a foaf:nick for a
+        dc:creator, then use that nickname as the attribution name """
+
+        triples = {'subjects': [
+                       'http://example.com',
+                       'http://testing.com'],
+                   'triples': {
+                       'http://example.com' : {
+                           DCT('creator'): [
+                               'http://testing.com'],
+                           },
+                       'http://testing.com': {
+                           FOAF('name'): [
+                               'FOAF Testing'],
+                           },
+                       },                       
+                   }
+
+        attrib = metadata.attribution('http://example.com', triples)
+        self.assertEqual(attrib['attributionName'], 'FOAF Testing')
+
+        # dc:creator should also work 
+        triples = {'subjects': [
+                       'http://example.com',
+                       'http://testing.com'],
+                   'triples': {
+                       'http://example.com' : {
+                           DC('creator'): [
+                               'http://testing.com'],
+                           },
+                       'http://testing.com': {
+                           FOAF('name'): [
+                               'FOAF DC:creator'],
+                           },
+                       },                       
+                   }
+
+        attrib = metadata.attribution('http://example.com', triples)
+        self.assertEqual(attrib['attributionName'], 'FOAF DC:creator')
+
+        # cc:attributionName should hold presidence over foaf
+        triples = {'subjects': [
+                       'http://example.com',
+                       'http://testing.com'],
+                   'triples': {
+                       'http://example.com' : {
+                           DCT('creator'): [
+                               'http://testing.com'],
+                           
+                           CC('attributionName') : [
+                               'cc:attributionName'],
+
+                           },
+                       'http://testing.com': {
+                           FOAF('name'): [
+                               'FOAF DC:creator'],
+                           },
+                       },                       
+                   }
+
+        attrib = metadata.attribution('http://example.com', triples)
+        self.assertEqual(attrib['attributionName'], 'cc:attributionName')
+        
+        
 
 class RegistrationTests (unittest.TestCase):
 

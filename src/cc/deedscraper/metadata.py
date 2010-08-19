@@ -28,6 +28,7 @@ POWDER = lambda part: "http://www.w3.org/2007/05/powder#%s" % part
 DC = lambda part: "http://purl.org/dc/elements/1.1/%s" % part
 DCT = lambda part: "http://purl.org/dc/terms/%s" % part
 XHTML = lambda part: "http://www.w3.org/1999/xhtml/vocab#%s" % part
+FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
 
 
 ##############################################################
@@ -190,6 +191,13 @@ def attribution(subject, metadata):
     attribName= metadata['triples'][subject].get( CC('attributionName'), '')
     attribURL = metadata['triples'][subject].get( CC('attributionURL'), '')
 
+    if not attribName:
+        creator = metadata['triples'][subject].get( DCT('creator') ) or \
+                  metadata['triples'][subject].get( DC('creator') ) or \
+                  None
+        if creator:
+            attribName = metadata['triples'][creator[0]].get( FOAF('name'), '')
+    
     if isinstance(attribName, list): attribName = attribName[0]
     if isinstance(attribURL, list): attribURL = attribURL[0]
     
