@@ -30,6 +30,39 @@ DCT = lambda part: "http://purl.org/dc/terms/%s" % part
 XHTML = lambda part: "http://www.w3.org/1999/xhtml/vocab#%s" % part
 FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
 
+################################################################
+##
+## Common operations for extracting information from the triples
+##
+################################################################
+
+def rdf_accessor(func):
+    """ Decorator for functions that serve to check for a set of
+    triples in a particular order for a specific subject. """
+    def check_subject_exists(subject, metadata):
+        if subject not in metadata['subjects']:
+            return None
+        results = func(subject, metadata)
+        if results: return results[0]
+        return None
+    
+    return check_subject_exists
+
+@rdf_accessor
+def get_license_uri(subject, metadata):
+    """ Returns the license uri specified by rel=license, dct:license,
+    dc:license, cc:license, in that order of precedence. """
+    return metadata['triples'][subject].get( XHTML('license') ) or \
+           metadata['triples'][subject].get( DCT('license') ) or \
+           metadata['triples'][subject].get( CC('license') ) or \
+           None
+
+@rdf_accessor
+def get_title(subject, metadata):
+    """ Returns the dct:title or dc:title for the subject """
+    return metadata['triples'][subject].get( DCT('title') ) or \
+           metadata['triples'][subject].get( DC('title') ) or \
+           None
 
 ##############################################################
 ##
@@ -37,33 +70,7 @@ FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
 ##                                                            
 ##############################################################
 
-def get_license_uri(subject, metadata):
 
-    if subject not in metadata['subjects']:
-        return None
-
-    license = metadata['triples'][subject].get( XHTML('license') ) or \
-              metadata['triples'][subject].get( DCT('license') ) or \
-              metadata['triples'][subject].get( CC('license') ) or \
-              None
-
-    if license:
-        return license[0]
-    else:
-        return None
-
-def get_title(subject, metadata):
-    """ Returns the dc:title for the subject """
-    if subject not in metadata['subjects']:
-        return None
-    title = metadata['triples'][subject].get( DCT('title') ) or \
-            metadata['triples'][subject].get( DC('title') ) or \
-            None
-    if title:
-        return title[0]
-    else:
-        return None
-    
 def match_iriset(metadata, irisets, subject):
 
     for iriset in [metadata['triples'][i] for i in irisets]:
@@ -272,3 +279,6 @@ def more_permissions(subject, metadata):
         'commercialLicense' : commLicense,
         'morePermAgent': morePermAgent,
         }
+    
+     
+    
