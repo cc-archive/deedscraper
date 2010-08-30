@@ -43,7 +43,7 @@ class PDMarkMetadataTests(unittest.TestCase):
         self.assertEqual(metadata.get_creator('http://example.com',triples),
                          'http://overrides.com')
         
-    def test_get_publisher(self):
+    def test_get_curator(self):
         """ Returns dct:publisher or dc:publisher """
         triples = {
             'subjects': [
@@ -56,15 +56,15 @@ class PDMarkMetadataTests(unittest.TestCase):
                 }
             }
 
-        self.assertEqual(metadata.get_publisher('http://example.com',triples),
+        self.assertEqual(metadata.get_curator('http://example.com',triples),
                          'http://testing.com')
 
         triples['triples']['http://example.com'][DCT('publisher')] = ['http://overrides.com']
-        self.assertEqual(metadata.get_publisher('http://example.com',triples),
+        self.assertEqual(metadata.get_curator('http://example.com',triples),
                          'http://overrides.com')
         
-    def test_get_curator(self):
-        """ Returns the publisher's title """
+    def test_get_curator_title(self):
+        """ Returns the curator's title """
         triples = {
             'subjects': [
                 'http://example.com',
@@ -82,6 +82,8 @@ class PDMarkMetadataTests(unittest.TestCase):
             }
 
         self.assertEqual(metadata.get_curator('http://example.com',triples),
+                         'http://testing.com')
+        self.assertEqual(metadata.get_title(metadata.get_curator('http://example.com',triples),triples),
                          'Publisher')
 
         
