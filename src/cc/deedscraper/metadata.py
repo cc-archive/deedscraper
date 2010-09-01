@@ -69,6 +69,7 @@ def get_creator(subject, metadata):
     """ Returns the dct:creator or dc:creator for the subject. """
     return metadata['triples'][subject].get( DCT('creator') ) or \
            metadata['triples'][subject].get( DC('creator') ) or \
+           metadata['triples'][subject].get( CC('attributionURL') ) or \
            None
 
 @rdf_accessor
@@ -77,6 +78,15 @@ def get_curator(subject, metadata):
     return metadata['triples'][subject].get( DCT('publisher') ) or \
            metadata['triples'][subject].get( DC('publisher') ) or \
            None
+
+@rdf_accessor
+def get_attribution_name(subject, metadata):
+    name = metadata['triples'][subject].get( CC('attributionName') ) 
+    if not name:
+        creator = get_creator(subject, metadata)
+        if creator:
+            return metadata['triples'][creator].get( FOAF('name') )
+    return name
 
 ##############################################################
 ##
@@ -209,17 +219,9 @@ def attribution(subject, metadata):
     if subject not in metadata['subjects']:
         return attrib
 
-    attribName= metadata['triples'][subject].get( CC('attributionName'), '')
+    attribName= get_attribution_name(subject, metadata) or ''
     attribURL = metadata['triples'][subject].get( CC('attributionURL'), '')
-
-    if not attribName:
-        creator = metadata['triples'][subject].get( DCT('creator') ) or \
-                  metadata['triples'][subject].get( DC('creator') ) or \
-                  None
-        if creator:
-            attribName = metadata['triples'][creator[0]].get( FOAF('name'), '')
     
-    if isinstance(attribName, list): attribName = attribName[0]
     if isinstance(attribURL, list): attribURL = attribURL[0]
     
     attrib['attributionName'] = attribName

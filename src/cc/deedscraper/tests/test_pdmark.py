@@ -24,22 +24,27 @@ class PDMarkMetadataTests(unittest.TestCase):
         self.app = base.test_app()
 
     def test_get_creator(self):
-        """ Returns dct:creator or dc:creator """
+        """ Returns dct:creator or dc:creator or cc:attributionURL """
         triples = {
             'subjects': [
                 'http://example.com',],
             'triples': {
                 'http://example.com' : {
-                    DC('creator') : [
-                        'http://testing.com'],
+                    CC('attributionURL') : [
+                        'http://nigerianprince.com'],
                     }
                 }
             }
+        self.assertEqual(metadata.get_creator('http://example.com',triples),
+                         'http://nigerianprince.com')
 
+        triples['triples']['http://example.com'][DC('creator')] = [
+            'http://testing.com']
         self.assertEqual(metadata.get_creator('http://example.com',triples),
                          'http://testing.com')
 
-        triples['triples']['http://example.com'][DCT('creator')] = ['http://overrides.com']
+        triples['triples']['http://example.com'][DCT('creator')] = [
+            'http://overrides.com']
         self.assertEqual(metadata.get_creator('http://example.com',triples),
                          'http://overrides.com')
         
@@ -62,6 +67,8 @@ class PDMarkMetadataTests(unittest.TestCase):
         triples['triples']['http://example.com'][DCT('publisher')] = ['http://overrides.com']
         self.assertEqual(metadata.get_curator('http://example.com',triples),
                          'http://overrides.com')
+
+        
         
     def test_get_curator_title(self):
         """ Returns the curator's title """
@@ -86,5 +93,35 @@ class PDMarkMetadataTests(unittest.TestCase):
         self.assertEqual(metadata.get_title(metadata.get_curator('http://example.com',triples),triples),
                          'Publisher')
 
+    def test_get_attribution_name(self):
+        """ attributionName should fall back to foaf:name of dc:creator """
+
+        triples = {
+            'subjects': [
+                'http://example.com',
+                'http://testing.com'],
+            'triples': {
+                'http://example.com' : {
+                    DC('creator') : [
+                        'http://testing.com'],
+                    },
+                'http://testing.com': {
+                    FOAF('name') : [
+                        'Seymour Butts'],
+                    }
+                }
+            }
+
+        self.assertEqual(metadata.get_attribution_name('http://example.com',
+                                                       triples),
+                         'Seymour Butts')
+
+        triples['triples']['http://example.com'][CC('attributionName')] = [
+            'Dr. Seymour Butts']
+
+        self.assertEqual(metadata.get_attribution_name('http://example.com',
+                                                       triples),
+                         'Dr. Seymour Butts')
+                                                 
         
         
