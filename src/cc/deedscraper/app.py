@@ -32,7 +32,8 @@ web.config.debug = False
 
 urls = (
     '/triples', 'Triples',
-    '/deed',    'Referer',
+    '/deed',    'DeedReferer',
+    '/mark',    'MarkReferer',
      )
 
 class Triples(ScrapeRequestHandler):
@@ -41,7 +42,7 @@ class Triples(ScrapeRequestHandler):
         triples = self._triples(web.input().get('url',''))
         return renderer.response(triples)
 
-class Referer(ScrapeRequestHandler):
+class DeedReferer(ScrapeRequestHandler):
 
     # maintain a cache of the deeds' lang codes
     deed_langs = {}
@@ -71,9 +72,7 @@ class Referer(ScrapeRequestHandler):
             return renderer.response(dict(_exception=unicode(e)))
         
         triples = self._first_pass(url, 'deed')
-        
         subject = metadata.extract_licensed_subject(url, license_uri, triples)
-
         triples = self._triples(url=url, action='deed', depth=1,
                                 sink=triples['sink'],
                                 subjects=triples['subjects'],
@@ -101,7 +100,8 @@ class Referer(ScrapeRequestHandler):
         regist = metadata.registration(subject, triples, license_uri) 
         mPerms = metadata.more_permissions(subject, triples)
 
-        # check if a dc:title exists
+        # check if a dc:title exists, if there is a title, it will replace
+        # any place where "this work" would normally appear in the deed popups
         title = metadata.get_title(subject, triples)
         
         results = {
@@ -131,7 +131,82 @@ class Referer(ScrapeRequestHandler):
         
         return renderer.response(results)
 
+class MarkReferer(ScrapeRequestHandler):
+    """ Request handler for the PD Mark deeds.
+
+    The PD Mark makes a single GET on its page load, requesting
+    the deedscraper to scrape the referring URI for any RDFa
+    metadata relevant to the marking of a public domain work.
+
+    """
+
+    # maintain a cache of the marks' lang codes
+    pdmark_langs = {}
+    
+    def GET(self):
+        
+        # this is required argument
+        url = web.input().get('url')
+        mark_uri = web.input().get('mark_uri') or \
+                   web.ctx.env.get('HTTP_REFERER')
+        
+        # fail on missing arguments - TODO -- finer-grained startswith
+        if mark_uri is None or url is None or \
+           not mark_uri.startswith('http://creativecommons.org/'):
+            return renderer.response(dict(
+                _exception='Invalid PD Mark URI.'))
+
+        # need to collect referer-level graph first
+        triples = self._first_pass(url, 'mark')
+        # determine what the subject uri is based on the referer's rdf graph
+        subject = metadata.extract_licensed_subject(url, mark_uri, triples)
+        # remotely request for more RDFa following only specific predicates
+        # resume building the graph returned from the first pass
+        triples = self._triples(url=url, action='deed', depth=1,
+                                sink=triples['sink'],
+                                subjects=triples['subjects'],
+                                redirects=triples['redirects'])
+        
+        # bail out if an exception occurred in the scraping
+        if '_exception' in triples['subjects']:
+            return renderer.response(dict(
+                _exception=triples['triples']['_exception']))
+
+        # PD Marks include a lang attribute in <html>
+        if mark_uri not in self.pdmark_langs.keys():
+            lang = support.get_document_locale(mark_uri)
+            if lang is None:
+                # didn't find a lang attribute in the html
+                lang = web.input().get('lang', 'en')
+            # cache the lang code based on the deed's uri
+            self.pdmark_langs[mark_uri] = lang
+        
+        # prepare to render messages for this lang
+        lang = self.pdmark_langs[mark_uri]
+        mark = cc.license.by_uri(str(mark_uri))
+        
+        results = {
+            'title': metadata.get_title(subject, triples),
+            'curator': metadata.get_curator(subject, triples),
+            'creator': metadata.get_creator(subject, triples),
+            }
+
+        results.update({
+            'curator_title': metadata.get_title(results['curator'], triples),
+            'creator_title': metadata.get_title(results['creator'], triples),
+            })
+
+        
+        results['marking'] = renderer.render('pd_marking.html',
+                                             dict(results,
+                                                  work=subject,
+                                                  mark_uri=mark.uri,
+                                                  mark_title=mark.title(lang),
+                                                  mark_version=mark.version))
+        
+        return renderer.response(results)
 
 application = web.application(urls, globals(),)
 
 if __name__ == "__main__": application.run()
+
