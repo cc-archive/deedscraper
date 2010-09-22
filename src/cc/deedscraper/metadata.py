@@ -84,7 +84,7 @@ def get_attribution_name(subject, metadata):
     name = metadata['triples'][subject].get( CC('attributionName') ) 
     if not name:
         creator = get_creator(subject, metadata)
-        if creator:
+        if creator and creator in metadata['subjects']:
             return metadata['triples'][creator].get( FOAF('name') )
     return name
 
