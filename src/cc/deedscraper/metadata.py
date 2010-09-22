@@ -195,7 +195,7 @@ def attribution(subject, metadata):
         creator = metadata['triples'][subject].get( DCT('creator') ) or \
                   metadata['triples'][subject].get( DC('creator') ) or \
                   None
-        if creator:
+        if creator and creator[0] in metadata['subjects']:
             attribName = metadata['triples'][creator[0]].get( FOAF('name'), '')
     
     if isinstance(attribName, list): attribName = attribName[0]
