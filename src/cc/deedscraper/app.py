@@ -20,11 +20,13 @@
 
 import gc
 import cc.license
-
+import cc.license.selectors
 import web
 import support
 import metadata
 import renderer
+
+CC0_SELECTOR = cc.license.selectors.choose('zero')
 
 from scraper import ScrapeRequestHandler
 
@@ -148,7 +150,7 @@ class MarkReferer(ScrapeRequestHandler):
         # this is required argument
         url = web.input().get('url')
         mark_uri = web.input().get('mark_uri') or \
-                   web.ctx.env.get('HTTP_REFERER')
+                       web.ctx.env.get('HTTP_REFERER')
         
         # fail on missing arguments - TODO -- finer-grained startswith
         if mark_uri is None or url is None or \
@@ -156,6 +158,8 @@ class MarkReferer(ScrapeRequestHandler):
             return renderer.response(dict(
                 _exception='Invalid PD Mark URI.'))
 
+        url, mark_uri = str(url), str(mark_uri)
+        
         # need to collect referer-level graph first
         triples = self._first_pass(url, 'mark')
         # determine what the subject uri is based on the referer's rdf graph
@@ -184,18 +188,24 @@ class MarkReferer(ScrapeRequestHandler):
         # prepare to render messages for this lang
         lang = self.pdmark_langs[mark_uri]
         mark = cc.license.by_uri(str(mark_uri))
+
+        # extra all license relations to check for dual-licensing
+        licenses = metadata.get_license_uri(subject, triples)
+        cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
+        if cc0: cc0 = cc0[0]
         
         results = {
             'title': metadata.get_title(subject, triples),
             'curator': metadata.get_curator(subject, triples),
             'creator': metadata.get_creator(subject, triples),
+            'norms': metadata.get_norms(subject, triples),
+            'dual_license': cc0,
             }
-
+        
         results.update({
             'curator_title': metadata.get_title(results['curator'], triples),
             'creator_title': metadata.get_title(results['creator'], triples),
             })
-
         
         results['marking'] = renderer.render('pd_marking.html',
                                              dict(results,

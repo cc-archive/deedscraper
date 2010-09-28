@@ -80,6 +80,12 @@ def get_curator(subject, metadata):
            None
 
 @rdf_accessor
+def get_norms(subject, metadata):
+    """ Return the uri detailing the norms for this document """
+    return metadata['triples'][subject].get( CC('usageGuidelines') ) or \
+           None
+
+@rdf_accessor
 def get_attribution_name(subject, metadata):
     name = metadata['triples'][subject].get( CC('attributionName') ) 
     if not name:
