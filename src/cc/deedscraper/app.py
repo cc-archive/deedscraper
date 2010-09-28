@@ -27,7 +27,9 @@ import metadata
 import renderer
 
 CC0_SELECTOR = cc.license.selectors.choose('zero')
-
+# maintain a cache of the deeds' lang codes
+LANGS = {}
+    
 from scraper import ScrapeRequestHandler
 
 web.config.debug = False
@@ -46,9 +48,6 @@ class Triples(ScrapeRequestHandler):
 
 class DeedReferer(ScrapeRequestHandler):
 
-    # maintain a cache of the deeds' lang codes
-    deed_langs = {}
-    
     def GET(self):
 
         # this is required argument
@@ -86,16 +85,16 @@ class DeedReferer(ScrapeRequestHandler):
                 _exception=triples['triples']['_exception']))
 
         # deeds include a lang attribute in <html>
-        if license_uri not in self.deed_langs.keys():
+        if license_uri not in LANGS.keys():
             lang = support.get_document_locale(license_uri)
             if lang is None:
                 # didn't find a lang attribute in the html
                 lang = web.input().get('lang', 'en')
             # cache the lang code based on the deed's uri
-            self.deed_langs[license_uri] = lang
+            LANGS[license_uri] = lang
         
         # prepare to render messages for this lang
-        renderer.set_locale(self.deed_langs[license_uri])
+        renderer.set_locale(LANGS[license_uri])
 
         # returns dictionaries with values to cc-relevant triples
         attrib = metadata.attribution(subject, triples)
@@ -142,9 +141,6 @@ class MarkReferer(ScrapeRequestHandler):
 
     """
 
-    # maintain a cache of the marks' lang codes
-    pdmark_langs = {}
-    
     def GET(self):
         
         # this is required argument
@@ -177,16 +173,16 @@ class MarkReferer(ScrapeRequestHandler):
                 _exception=triples['triples']['_exception']))
 
         # PD Marks include a lang attribute in <html>
-        if mark_uri not in self.pdmark_langs.keys():
+        if mark_uri not in LANGS.keys():
             lang = support.get_document_locale(mark_uri)
             if lang is None:
                 # didn't find a lang attribute in the html
                 lang = web.input().get('lang', 'en')
             # cache the lang code based on the deed's uri
-            self.pdmark_langs[mark_uri] = lang
+            LANGS[mark_uri] = lang
         
         # prepare to render messages for this lang
-        lang = self.pdmark_langs[mark_uri]
+        lang = LANGS[mark_uri]
         mark = cc.license.by_uri(str(mark_uri))
 
         # extra all license relations to check for dual-licensing
