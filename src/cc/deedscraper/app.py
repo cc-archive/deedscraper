@@ -37,7 +37,7 @@ web.config.debug = False
 urls = (
     '/triples', 'Triples',
     '/deed',    'DeedReferer',
-    '/mark',    'MarkReferer',
+    '/pdmark',  'PublicDomainReferer',
      )
 
 class Triples(ScrapeRequestHandler):
@@ -46,79 +46,112 @@ class Triples(ScrapeRequestHandler):
         triples = self._triples(web.input().get('url',''))
         return renderer.response(triples)
 
-class DeedReferer(ScrapeRequestHandler):
-
-    def GET(self):
-
+class RefererHandler(ScrapeRequestHandler):
+    
+    """ Base class for the handlers involved in scraping referrers and
+    displaying information about that document on the deed. """
+    
+    # CACHE VARIABLES.
+    # LOW MEMORY < RESPONSE TIME -- IN TERMS OF IMPORTANCE FOR THIS APPLICATION
+    # cache mapping of license uri's and their rendered language
+    # e.g.  http://creativecommons.org/licenses/by/3.0/deed.es => 'es'
+    LANGS = {}
+    # cache mapping of license uri's => cc.license License objects
+    # e.g.  http://creativecommons.org/publicdomain/zero/1.0/ =>
+    #       <License object 'http://creativecommons.org/publicdomain/zero/1.0/'>
+    LICENSES = {} 
+    
+    def scrape_referer(self, action):
         # this is required argument
-        url = web.input().get('url')
-        license_uri = web.input().get('license_uri') or \
-                      web.ctx.env.get('HTTP_REFERER')
 
-        # fail on missing arguments - TODO -- FAIL, REALLY?
+        url = web.input().get('url', None)
+        license_uri = web.input().get('license_uri') or \
+                      web.ctx.env.get('HTTP_REFERER', None)
+        
         if license_uri is None or url is None or \
            not license_uri.startswith('http://creativecommons.org/'):
-            return renderer.response(dict(
-                _exception='A license URI and a subject URI must be provided.'))
-
-        # get a cc license object
-        # cclicense = metadata.LicenseFactory.from_uri(license_uri)
-        try:
-            if 'deed' in license_uri:
-                stripped_uri = license_uri[:(license_uri.rindex('/')+1)]
-                cclicense = cc.license.by_uri(str(stripped_uri))
-            else:
-                cclicense = cc.license.by_uri(str(license_uri))
-        except cc.license.CCLicenseError, e:
-            return renderer.response(dict(_exception=unicode(e)))
+            raise Exception("A license URI and a subject URI must be provided.")
         
-        triples = self._first_pass(url, 'deed')
-        subject = metadata.extract_licensed_subject(url, license_uri, triples)
-        triples = self._triples(url=url, action='deed', depth=1,
-                                sink=triples['sink'],
-                                subjects=triples['subjects'],
-                                redirects=triples['redirects']) 
+        if license_uri not in self.LICENSES.keys():
+            try:
+                if 'deed' in license_uri:
+                    stripped_uri = license_uri[:(license_uri.rindex('/')+1)]
+                    cclicense = cc.license.by_uri(str(stripped_uri))
+                else:
+                    cclicense = cc.license.by_uri(str(license_uri))
+            except cc.license.CCLicenseError, e:
+                raise Exception("Invalid license URI.")
+            # cache the cc.license object so we dont have to fetch it again
+            self.LICENSES[license_uri] = cclicense
         
-        if '_exception' in triples['subjects']:
-            # should probably report the error but for now...
-            return renderer.response(dict(
-                _exception=triples['triples']['_exception']))
-
         # deeds include a lang attribute in <html>
-        if license_uri not in LANGS.keys():
+        if license_uri not in self.LANGS.keys():
             lang = support.get_document_locale(license_uri)
             if lang is None:
                 # didn't find a lang attribute in the html
                 lang = web.input().get('lang', 'en')
             # cache the lang code based on the deed's uri
-            LANGS[license_uri] = lang
+            self.LANGS[license_uri] = lang
         
-        # prepare to render messages for this lang
-        renderer.set_locale(LANGS[license_uri])
+        # set the global lang variable in the renderer
+        renderer.set_locale(self.LANGS[license_uri])
+        
+        triples = self._first_pass(url, action)
+        if '_exception' in triples['triples'].keys():
+            # should probably report the error but for now...
+            raise Exception(triples['triples']['_exception'])
+        
+        subject = metadata.extract_licensed_subject(url, license_uri, triples)
+        triples = self._triples(
+            url=url, action=action, depth=1,
+            sink=triples['sink'], subjects=triples['subjects'],
+            redirects=triples['redirects']) 
+        
+        # check again for any exceptions
+        if '_exception' in triples['triples'].keys():
+            raise Exception(triples['triples']['_exception'])
+        
+        self.url = str(url)
+        self.license_uri = str(license_uri)
+        self.cclicense = self.LICENSES[license_uri]
+        self.lang = self.LANGS[license_uri]
+        self.subject = subject
+        self.triples = triples
 
-        # returns dictionaries with values to cc-relevant triples
-        attrib = metadata.attribution(subject, triples)
-        regist = metadata.registration(subject, triples, license_uri) 
-        mPerms = metadata.more_permissions(subject, triples)
+        return
 
+class DeedReferer(RefererHandler):
+
+    def GET(self):
+
+        try:
+            self.scrape_referer('deed')
+        except Exception, e:
+            return renderer.response(dict(_exception=str(e)))
+        
+        # returns dictionaries with values to CCREL triples
+        attrib = metadata.attribution(self.subject, self.triples)
+        regist = metadata.registration(self.subject, self.triples, self.license_uri) 
+        mPerms = metadata.more_permissions(self.subject, self.triples)
+        
         # check if a dc:title exists, if there is a title, it will replace
         # any place where "this work" would normally appear in the deed popups
-        title = metadata.get_title(subject, triples)
+        title = metadata.get_title(self.subject, self.triples)
         
         results = {
             'attribution': {
                 'details': renderer.render(
                     'attribution_details.html', {
-                        'subject': subject,
-                        'license': cclicense,
-                        'title': title,
+                        'subject': self.subject,
+                        'license': self.cclicense,
+                        'title':title,
                         'attributionName': attrib['attributionName'],
                         'attributionURL': attrib['attributionURL'],
                         }),
                 'marking': renderer.render(
                     'attribution_marking.html', {
-                        'subject': subject,
-                        'license': cclicense,
+                        'subject': self.subject,
+                        'license': self.cclicense,
                         'title': title,
                         'attributionName': attrib['attributionName'],
                         'attributionURL': attrib['attributionURL'],
@@ -126,88 +159,48 @@ class DeedReferer(ScrapeRequestHandler):
                 },
             'registration':     renderer.render('registration.html', regist),
             'more_permissions': renderer.render('more_permissions.html',
-                                                dict(subject=subject, **mPerms)),
+                                                dict(subject=self.subject, **mPerms)),
             
             }
         
         return renderer.response(results)
 
-class MarkReferer(ScrapeRequestHandler):
-    """ Request handler for the PD Mark deeds.
+class PublicDomainReferer(ScrapeRequestHandler):
+    """ Request handler for the PD Mark deeds and CC0.
 
     The PD Mark makes a single GET on its page load, requesting
     the deedscraper to scrape the referring URI for any RDFa
-    metadata relevant to the marking of a public domain work.
+    metadata relevant to the marking of a public domain or CC0 work.
 
     """
 
     def GET(self):
-        
-        # this is required argument
-        url = web.input().get('url')
-        mark_uri = web.input().get('mark_uri') or \
-                       web.ctx.env.get('HTTP_REFERER')
-        
-        # fail on missing arguments - TODO -- finer-grained startswith
-        if mark_uri is None or url is None or \
-           not mark_uri.startswith('http://creativecommons.org/'):
-            return renderer.response(dict(
-                _exception='Invalid PD Mark URI.'))
 
-        url, mark_uri = str(url), str(mark_uri)
+        self.scrape_referer('pd')        
         
-        # need to collect referer-level graph first
-        triples = self._first_pass(url, 'mark')
-        # determine what the subject uri is based on the referer's rdf graph
-        subject = metadata.extract_licensed_subject(url, mark_uri, triples)
-        # remotely request for more RDFa following only specific predicates
-        # resume building the graph returned from the first pass
-        triples = self._triples(url=url, action='deed', depth=1,
-                                sink=triples['sink'],
-                                subjects=triples['subjects'],
-                                redirects=triples['redirects'])
-        
-        # bail out if an exception occurred in the scraping
-        if '_exception' in triples['subjects']:
-            return renderer.response(dict(
-                _exception=triples['triples']['_exception']))
-
-        # PD Marks include a lang attribute in <html>
-        if mark_uri not in LANGS.keys():
-            lang = support.get_document_locale(mark_uri)
-            if lang is None:
-                # didn't find a lang attribute in the html
-                lang = web.input().get('lang', 'en')
-            # cache the lang code based on the deed's uri
-            LANGS[mark_uri] = lang
-        
-        # prepare to render messages for this lang
-        lang = LANGS[mark_uri]
-        mark = cc.license.by_uri(str(mark_uri))
-
         # extra all license relations to check for dual-licensing
-        licenses = metadata.get_license_uri(subject, triples)
+        licenses = metadata.get_license_uri(self.subject, self.triples)
         cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
         if cc0: cc0 = cc0[0]
         
         results = {
-            'title': metadata.get_title(subject, triples),
-            'curator': metadata.get_curator(subject, triples),
-            'creator': metadata.get_creator(subject, triples),
-            'norms': metadata.get_norms(subject, triples),
+            'title': metadata.get_title(self.subject, self.triples),
+            'curator': metadata.get_curator(self.subject, self.triples),
+            'creator': metadata.get_creator(self.subject, self.triples),
+            'norms': metadata.get_norms(self.subject, self.triples),
             'dual_license': cc0,
             }
         
         results.update({
-            'curator_title': metadata.get_title(results['curator'], triples),
-            'creator_title': metadata.get_title(results['creator'], triples),
+            'curator_title': metadata.get_title(results['curator'], self.triples),
+            'creator_title': metadata.get_title(results['creator'], self.triples),
             })
         
         results['marking'] = renderer.render('pd_marking.html',
                                              dict(results,
-                                                  work=subject,
+                                                  work=self.subject,
                                                   mark_uri=mark.uri,
-                                                  mark_title=mark.title(lang),
+                                                  mark_title=mark.title(self.lang),
                                                   mark_version=mark.version))
         
         return renderer.response(results)
@@ -215,4 +208,3 @@ class MarkReferer(ScrapeRequestHandler):
 application = web.application(urls, globals(),)
 
 if __name__ == "__main__": application.run()
-
