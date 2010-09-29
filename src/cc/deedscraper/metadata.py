@@ -73,7 +73,7 @@ def get_creator(subject, metadata):
            None
 
 @rdf_accessor
-def get_curator(subject, metadata):
+def get_publisher(subject, metadata):
     """ Returns the dct:publisher or dc:publisher for the subject. """
     return metadata['triples'][subject].get( DCT('publisher') ) or \
            metadata['triples'][subject].get( DC('publisher') ) or \

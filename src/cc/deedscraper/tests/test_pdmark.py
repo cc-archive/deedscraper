@@ -61,11 +61,11 @@ class PDMarkMetadataTests(unittest.TestCase):
                 }
             }
 
-        self.assertEqual(metadata.get_curator('http://example.com',triples),
+        self.assertEqual(metadata.get_publisher('http://example.com',triples),
                          'http://testing.com')
 
         triples['triples']['http://example.com'][DCT('publisher')] = ['http://overrides.com']
-        self.assertEqual(metadata.get_curator('http://example.com',triples),
+        self.assertEqual(metadata.get_publisher('http://example.com',triples),
                          'http://overrides.com')
 
         
@@ -88,9 +88,9 @@ class PDMarkMetadataTests(unittest.TestCase):
                 }
             }
 
-        self.assertEqual(metadata.get_curator('http://example.com',triples),
+        self.assertEqual(metadata.get_publisher('http://example.com',triples),
                          'http://testing.com')
-        self.assertEqual(metadata.get_title(metadata.get_curator('http://example.com',triples),triples),
+        self.assertEqual(metadata.get_title(metadata.get_publisher('http://example.com',triples),triples),
                          'Publisher')
 
     def test_get_attribution_name(self):

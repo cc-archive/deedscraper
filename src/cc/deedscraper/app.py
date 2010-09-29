@@ -37,7 +37,7 @@ web.config.debug = False
 urls = (
     '/triples', 'Triples',
     '/deed',    'DeedReferer',
-    '/pdmark',  'PublicDomainReferer',
+    '/pddeed',  'PublicDomainReferer',
      )
 
 class Triples(ScrapeRequestHandler):
@@ -165,7 +165,7 @@ class DeedReferer(RefererHandler):
         
         return renderer.response(results)
 
-class PublicDomainReferer(ScrapeRequestHandler):
+class PublicDomainReferer(RefererHandler):
     """ Request handler for the PD Mark deeds and CC0.
 
     The PD Mark makes a single GET on its page load, requesting
@@ -179,16 +179,16 @@ class PublicDomainReferer(ScrapeRequestHandler):
         self.scrape_referer('pd')        
         
         # extra all license relations to check for dual-licensing
-        licenses = metadata.get_license_uri(self.subject, self.triples)
+        licenses = metadata.get_license_uri(self.subject, self.triples) or []
         cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
         if cc0: cc0 = cc0[0]
         
         results = {
             'title': metadata.get_title(self.subject, self.triples),
-            'curator': metadata.get_curator(self.subject, self.triples),
+            'curator': metadata.get_publisher(self.subject, self.triples),
             'creator': metadata.get_creator(self.subject, self.triples),
             'norms': metadata.get_norms(self.subject, self.triples),
-            'dual_license': cc0,
+            'cc0': cc0,
             }
         
         results.update({
@@ -199,11 +199,11 @@ class PublicDomainReferer(ScrapeRequestHandler):
         results['marking'] = renderer.render('pd_marking.html',
                                              dict(results,
                                                   work=self.subject,
-                                                  mark_uri=mark.uri,
-                                                  mark_title=mark.title(self.lang),
-                                                  mark_version=mark.version))
+                                                  mark_uri=self.cclicense.uri,
+                                                  mark_title=self.cclicense.title(self.lang),
+                                                  mark_version=self.cclicense.version))
         
-        return renderer.response(results)
+        return renderer.response(results) 
 
 application = web.application(urls, globals(),)
 
