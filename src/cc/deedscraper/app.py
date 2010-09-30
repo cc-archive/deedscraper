@@ -188,7 +188,7 @@ class PublicDomainReferer(RefererHandler):
             'curator': metadata.get_publisher(self.subject, self.triples),
             'creator': metadata.get_creator(self.subject, self.triples),
             'norms': metadata.get_norms(self.subject, self.triples),
-            'cc0': cc0,
+            'waiver': cc0,
             }
         
         results.update({
