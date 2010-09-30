@@ -19,7 +19,7 @@ DEED_FILES = $(LD_FILES) \
 	src/deed/attribution.js \
 	src/deed/queries.js
 
-all: deed-dbg.js deed.js ld-min.js deed-sparql.js deed-sparql-min.js
+all: deed-dbg.js deed.js pddeed-dbg.js pddeed.js ld-min.js deed-sparql.js deed-sparql-min.js
 
 ld-min.js: ld.js
 	java -jar $(YUI_COMPRESS_JAR) ld.js > ld-min.js
@@ -40,11 +40,17 @@ deed-sparql.js: $(DEED_FILES)
 deed-dbg.js: $(JS_FILES)
 	cat $(JS_FILES) > deed-dbg.js
 
+pddeed-dbg.js: src/pd.js
+	cat src/LICENSE src/pd.js > pddeed-dbg.js
+
 deed.js: deed-dbg.js
 	java -jar $(YUI_COMPRESS_JAR) deed-dbg.js > deed.js
+
+pddeed.js: deed-dbg.js
+	java -jar $(YUI_COMPRESS_JAR) pddeed-dbg.js > pddeed.js
 
 verbose: deed-dbg.js
 	java -jar $(YUI_COMPRESS_JAR) -v deed-dbg.js > deed.js
 
 clean:
-	rm deed.js deed-dbg.js ld.js ld-min.js deed-sparql.js deed-sparql-min.js
+	rm deed.js deed-dbg.js pddeed-dbg.js deed.js ld.js ld-min.js deed-sparql.js deed-sparql-min.js
