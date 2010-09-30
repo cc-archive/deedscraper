@@ -14,7 +14,8 @@ YAHOO.cc.success = function (response) {
     if (response.status != 200) return;
 
     var popups = YAHOO.lang.JSON.parse(response.responseText);
-    var cc_zero = document.location.match('^http://creativecommons.org/publicdomain/zero');
+    var cc_zero = document.location.pathname.match(
+                     '^http://creativecommons.org/publicdomain/zero');
     
     if ( popups.norms || popups.waiver || 
          popups.title || popups.creator_title || popups.curator_title ) {
