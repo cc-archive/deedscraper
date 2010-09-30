@@ -176,7 +176,10 @@ class PublicDomainReferer(RefererHandler):
 
     def GET(self):
 
-        self.scrape_referer('pd')        
+        try:
+            self.scrape_referer('pddeed')
+        except Exception, e:
+            return renderer.response(dict(_exception=str(e)))
         
         # extra all license relations to check for dual-licensing
         licenses = metadata.get_license_uri(self.subject, self.triples) or []
