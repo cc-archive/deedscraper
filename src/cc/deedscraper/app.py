@@ -173,19 +173,23 @@ class PublicDomainReferer(RefererHandler):
     metadata relevant to the marking of a public domain or CC0 work.
 
     """
-
     def GET(self):
-
+        """ Scrape and process the referer's metadata. """
         try:
             self.scrape_referer('pddeed')
         except Exception, e:
-            return renderer.response(dict(_exception=str(e)))
-        
+            return renderer.response(dict(_exception=str(e)))    
+        return renderer.response(self.results())
+    
+    def results(self):
+        """ Process the scraped triples for the deed. """
+
         # extra all license relations to check for dual-licensing
         licenses = metadata.get_license_uri(self.subject, self.triples) or []
         cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
         if cc0: cc0 = cc0[0]
-        
+
+        # empty values are represented by None
         results = {
             'title': metadata.get_title(self.subject, self.triples),
             'curator': metadata.get_publisher(self.subject, self.triples),
@@ -205,8 +209,7 @@ class PublicDomainReferer(RefererHandler):
                                                   mark_uri=self.cclicense.uri,
                                                   mark_title=self.cclicense.title(self.lang),
                                                   mark_version=self.cclicense.version))
-        
-        return renderer.response(results) 
+        return results
 
 application = web.application(urls, globals(),)
 
