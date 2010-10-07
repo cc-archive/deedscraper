@@ -22,6 +22,7 @@ import gc
 import cc.license
 import cc.license.selectors
 import web
+import cgi
 import support
 import metadata
 import renderer
@@ -183,7 +184,7 @@ class PublicDomainReferer(RefererHandler):
     
     def results(self):
         """ Process the scraped triples for the deed. """
-
+        
         # extra all license relations to check for dual-licensing
         licenses = metadata.get_license_uri(self.subject, self.triples) or []
         cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
@@ -202,6 +203,13 @@ class PublicDomainReferer(RefererHandler):
             'curator_title': metadata.get_title(results['curator'], self.triples),
             'creator_title': metadata.get_title(results['creator'], self.triples),
             })
+
+        # escape and strip whitespaces
+        results = dict(
+            map(lambda (k,v):
+                (k,v and ' '.join(''.join(cgi.escape(v).split('\\n')).split())),
+                results.items())
+            )
         
         results['marking'] = renderer.render('pd_marking.html',
                                              dict(results,
