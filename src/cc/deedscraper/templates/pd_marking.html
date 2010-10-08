@@ -4,9 +4,9 @@
 <span property="dct:title">{{ title }}</span> {% endif -%}
 {%- if creator -%}
 {%- if creator_title -%}
-by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="{{ creator }}">{{ creator_title }}</a>
+/ <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="{{ creator }}">{{ creator_title }}</a>
 {%- else -%}
-by <a rel="cc:attributionURL dct:creator" href="{{ creator }}">{{ creator }}</a>
+/ <a rel="cc:attributionURL dct:creator" href="{{ creator }}">{{ creator }}</a>
 {%- endif -%}
 {%- endif -%}
 {%- if curator -%}
