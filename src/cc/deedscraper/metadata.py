@@ -82,7 +82,7 @@ def get_publisher(subject, metadata):
 @rdf_accessor
 def get_norms(subject, metadata):
     """ Return the uri detailing the norms for this document """
-    return metadata['triples'][subject].get( CC('usageGuidelines') ) or \
+    return metadata['triples'][subject].get( CC('useGuidelines') ) or \
            None
 
 @rdf_accessor
