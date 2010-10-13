@@ -33,23 +33,33 @@ YAHOO.cc.success = function (response) {
     // Display the work's title
     if ( popups.title != null ) 
         YAHOO.cc.toggle('meta_title').innerHTML = popups.title;
-    // Display any author information
-    if ( popups.creator_title != null ) {
+    
+    if(!cc_zero) {
+      // Display any author information
+      if ( popups.creator_title != null ) {
         var creator = popups.creator_title;
         if ( popups.creator != null ) 
             creator = "<a href='"+popups.creator+"'>" + popups.creator_title + "</a>";
         YAHOO.cc.toggle('meta_author').innerHTML = creator;
-    }
-    // Display any curator information
-    if ( popups.curator_title != null ) {
+      }
+      // Display any curator information
+      if ( popups.curator_title != null ) {
         var curator = popups.curator_title;
         if ( popups.curator != null ) 
             curator = "<a href='"+popups.curator+"'>" + popups.curator_title + "</a>";
         YAHOO.cc.toggle('meta_curator').innerHTML = curator;
-    }
-    
-    if ( popups.waiver != null && !cc_zero)
+      }
+      if ( popups.waiver != null)
         YAHOO.cc.toggle('zero_help');
+    } else {
+      // Display any affirmer information
+      if ( popups.curator_title != null ) {
+        var curator = popups.curator_title;
+        if ( popups.curator != null )
+            curator = "<a href='"+popups.curator+"'>" + popups.curator_title + "</a>";
+        YAHOO.cc.toggle('meta_affirmer').innerHTML = curator;
+      }
+    }
     
     return;
 
