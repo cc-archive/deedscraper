@@ -215,8 +215,7 @@ class PublicDomainReferer(RefererHandler):
                                              dict(results,
                                                   work=self.subject,
                                                   mark_uri=self.cclicense.uri,
-                                                  mark_title=self.cclicense.title(self.lang),
-                                                  mark_version=self.cclicense.version))
+                                                  mark_title=self.cclicense.title(self.lang)))
         return results
 
 application = web.application(urls, globals(),)
