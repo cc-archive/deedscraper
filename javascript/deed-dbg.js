@@ -85,9 +85,7 @@ YAHOO.cc.attribution.show_info = function(attrib) {
 
 YAHOO.cc.success = function (response) {
 
-    if (response.status != 200) return;
-
-    var popups = YAHOO.lang.JSON.parse(response.responseText);
+    var popups = YAHOO.lang.JSON.parse(response);
     
     // Check for attribution results
     if ( popups.attribution.details != '' ) 

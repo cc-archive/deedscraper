@@ -38,9 +38,7 @@ YAHOO.cc.toggle = function(fieldName, fieldValue) {
 
 YAHOO.cc.success = function (response) {
 
-    if (response.status != 200) return;
-
-    var popups = YAHOO.lang.JSON.parse(response.responseText);
+    var popups = YAHOO.lang.JSON.parse(response);
     var cc_zero = document.URL.match(
                      '^http://creativecommons.org/publicdomain/zero');
     
@@ -91,31 +89,3 @@ YAHOO.cc.success = function (response) {
     return;
 
 } // success
-
-YAHOO.cc.failure = function () {
-
-} // failure
-
-YAHOO.cc.load = function () {
-
-    if (document.referrer.match('^http://')) {
-
-	// construct the request callback
-	var callback = {
-	    success: YAHOO.cc.success,
-	    failure: YAHOO.cc.failure,
-	    argument: document.referrer
-	};
-
-	// initialize the header to include the Referer
-	YAHOO.util.Connect.initHeader('Referer', document.URL.replace('staging.',''), true);
-
-	var url = '/apps/pddeed?url=' + encodeURIComponent(document.referrer);
-	
-	YAHOO.util.Connect.asyncRequest('GET', url, callback, null);
-
-    } // if refered from http:// request
-
-} // load
-
-YAHOO.util.Event.onDOMReady(YAHOO.cc.load);
