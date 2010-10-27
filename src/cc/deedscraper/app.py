@@ -45,7 +45,11 @@ class Triples(ScrapeRequestHandler):
 
     def GET(self):
         triples = self._triples(web.input().get('url',''))
-        return renderer.response(triples)
+        callback = web.input().get('callback')
+        if callback:
+            return "%s(%s)" % (callback, renderer.response(triples))
+        else:
+            return renderer.response(triples)
 
 class RefererHandler(ScrapeRequestHandler):
     
@@ -124,12 +128,21 @@ class RefererHandler(ScrapeRequestHandler):
 class DeedReferer(RefererHandler):
 
     def GET(self):
-
+        """ Scrape and process the referer's metadata. """
         try:
             self.scrape_referer('deed')
         except Exception, e:
             return renderer.response(dict(_exception=str(e)))
-        
+
+        # if there's a callback specified, wrap the results as a js function call
+        callback = web.input().get('callback')
+        if callback:
+            return "%s(%s)" % (callback, renderer.response(self.results()))
+        else:
+            return renderer.response(self.results())
+
+    def results(self):
+        """ Interprets the scraped data for its significance to a deed """
         # returns dictionaries with values to CCREL triples
         attrib = metadata.attribution(self.subject, self.triples)
         regist = metadata.registration(self.subject, self.triples, self.license_uri) 
@@ -164,7 +177,7 @@ class DeedReferer(RefererHandler):
             
             }
         
-        return renderer.response(results)
+        return results
 
 class PublicDomainReferer(RefererHandler):
     """ Request handler for the PD Mark deeds and CC0.
@@ -180,8 +193,13 @@ class PublicDomainReferer(RefererHandler):
             self.scrape_referer('pddeed')
         except Exception, e:
             return renderer.response(dict(_exception=str(e)))    
-        return renderer.response(self.results())
-    
+
+        callback = web.input().get('callback')
+        if callback:
+            return "%s(%s)" % (callback, renderer.response(self.results()))
+        else:
+            return renderer.response(self.results())
+        
     def results(self):
         """ Process the scraped triples for the deed. """
         
@@ -216,6 +234,7 @@ class PublicDomainReferer(RefererHandler):
                                                   work=self.subject,
                                                   mark_uri=self.cclicense.uri,
                                                   mark_title=self.cclicense.title(self.lang)))
+        
         return results
 
 application = web.application(urls, globals(),)

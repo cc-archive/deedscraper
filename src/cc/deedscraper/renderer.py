@@ -62,5 +62,5 @@ def render(template, context, locale=None):
     return template.render(**context)
     
 def response(data):
-    web.header("Content-Type", "application/json")
+    web.header("Content-Type", "text/javascript")
     return json.dumps(data)
