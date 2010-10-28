@@ -9,9 +9,8 @@ YAHOO.cc.toggle = function(fieldName, fieldValue) {
     return ele;
 }
 
-YAHOO.cc.success = function (response) {
+YAHOO.cc.success = function (popups) {
 
-    var popups = YAHOO.lang.JSON.parse(response);
     var cc_zero = document.URL.match(
                      '^http://creativecommons.org/publicdomain/zero');
     
