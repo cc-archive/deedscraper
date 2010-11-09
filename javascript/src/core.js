@@ -6,10 +6,8 @@
 // **  Parsing/Scraping/Dispatch
 // **
 
-YAHOO.cc.success = function (response) {
-
-    var popups = YAHOO.lang.JSON.parse(response);
-    
+YAHOO.cc.success = function (popups) {
+ 
     // Check for attribution results
     if ( popups.attribution.details != '' ) 
         YAHOO.cc.attribution.show_info(popups.attribution);
