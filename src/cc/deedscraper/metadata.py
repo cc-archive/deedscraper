@@ -48,14 +48,19 @@ def rdf_accessor(func):
     
     return check_subject_exists
 
-@rdf_accessor
-def get_license_uri(subject, metadata):
-    """ Returns the license uri specified by rel=license, dct:license,
-    dc:license, cc:license, in that order of precedence. """
+def get_license_uris(subject, metadata):
+    """ Return a list of all licenses specified for the subject """
+    if subject not in metadata['subjects']: return []
     return metadata['triples'][subject].get( XHTML('license') ) or \
            metadata['triples'][subject].get( DCT('license') ) or \
            metadata['triples'][subject].get( CC('license') ) or \
-           None
+           []
+
+@rdf_accessor
+def get_license_uri(subject, metadata):
+    """ Returns the 1st license uri specified by rel=license, dct:license,
+    dc:license, cc:license, in that order of precedence. """
+    return get_license_uris(subject, metadata)
 
 @rdf_accessor
 def get_title(subject, metadata):
@@ -201,10 +206,10 @@ def is_registered(subject, license_uri, metadata):
 
 def extract_licensed_subject(subject, license_uri, metadata):
     
-    if get_license_uri(subject, metadata) == license_uri:
+    if license_uri in get_license_uris(subject, metadata):
         return subject
 
-    licensed = filter( lambda s: get_license_uri(s,metadata) == license_uri,
+    licensed = filter( lambda s: license_uri in get_license_uris(s,metadata),
                        metadata['subjects'] )
     
     if len(licensed) == 1:
