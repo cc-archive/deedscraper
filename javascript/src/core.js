@@ -23,3 +23,24 @@ YAHOO.cc.success = function (popups) {
     return;
 
 } // success
+
+YAHOO.cc.load = function () {
+    var path = document.location.pathname;
+    if(!path.match('/$')) path += '/';
+        // monitor marking copy-and-paste
+    YAHOO.util.Event.addListener('work-attribution', 'click', function() {
+            var pageTracker = _gaq._getAsyncTracker('UA-2010376-1');
+            pageTracker._trackPageview(path + 'deed-attribution-click');
+            return true;
+        });
+    // webkit browser copy event
+    if(typeof document.getElementById('work-attribution').oncopy) {
+        document.getElementById('work-attribution').oncopy = function() {
+            var pageTracker = _gaq._getAsyncTracker('UA-2010376-1');
+            pageTracker._trackPageview(path + 'deed-attribution-copied');
+            return true;
+        };
+    }
+} // load
+
+YAHOO.util.Event.onDOMReady(YAHOO.cc.load);
