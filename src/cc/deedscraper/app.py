@@ -207,6 +207,8 @@ class PublicDomainReferer(RefererHandler):
         licenses = metadata.get_license_uri(self.subject, self.triples) or []
         cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
         if cc0: cc0 = cc0[0]
+        
+        regist = metadata.registration(self.subject, self.triples, self.license_uri)
 
         # empty values are represented by None
         results = {
@@ -229,11 +231,14 @@ class PublicDomainReferer(RefererHandler):
                 results.items())
             )
         
-        results['marking'] = renderer.render('pd_marking.html',
-                                             dict(results,
-                                                  work=self.subject,
-                                                  mark_uri=self.cclicense.uri,
-                                                  mark_title=self.cclicense.title(self.lang)))
+        results.update({
+            'marking': renderer.render('pd_marking.html',
+                                       dict(results,
+                                        work=self.subject,
+                                        mark_uri=self.cclicense.uri,
+                                        mark_title=self.cclicense.title(self.lang))),
+            'registration': renderer.render('registration.html', regist),
+            })
         
         return results
 

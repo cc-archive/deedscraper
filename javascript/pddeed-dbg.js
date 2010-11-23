@@ -26,6 +26,25 @@
  */
 
 
+// ************************************************************************
+// ************************************************************************
+// ** 
+// **  Registration
+// **
+
+YAHOO.cc.network.show_info = function(registration) {
+     // display the registration information
+     var module = new YAHOO.widget.Module("network", {visible:true});
+     module.setBody(registration);
+     module.render(
+		YAHOO.util.Dom.getAncestorBy(
+		    YAHOO.util.Dom.get("work-attribution-container"),
+			function(e) {return true;}));
+     YAHOO.util.Dom.addClass(module.body, "network");
+     module.show();
+ }
+
+
 YAHOO.namespace("cc");
 
 // **  Parsing/Scraping/Dispatch
@@ -57,6 +76,9 @@ YAHOO.cc.success = function (popups) {
     // Display the work's title
     if ( popups.title != null ) 
         YAHOO.cc.toggle('meta_title').innerHTML = popups.title;
+    // Display registration information
+    if ( popups.registration != null )
+        YAHOO.cc.network.show_info(popups.registration)
     
     if(!cc_zero) {
       // Display any author information

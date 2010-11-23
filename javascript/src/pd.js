@@ -30,6 +30,9 @@ YAHOO.cc.success = function (popups) {
     // Display the work's title
     if ( popups.title != null ) 
         YAHOO.cc.toggle('meta_title').innerHTML = popups.title;
+    // Display registration information
+    if ( popups.registration != null )
+        YAHOO.cc.network.show_info(popups.registration)
     
     if(!cc_zero) {
       // Display any author information
