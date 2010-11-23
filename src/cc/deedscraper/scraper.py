@@ -71,7 +71,6 @@ class ScrapeRequestHandler(object):
 
     def _load_source(self, url, subjects=None, sink=None,
                      depth=2, redirects=None):
-        
         # bail out if we've hit the parsing limit
         if depth < 0:
             return sink
@@ -86,7 +85,7 @@ class ScrapeRequestHandler(object):
 
         try:
             # load the specified URL and parse the RDFa
-            opener = urllib2.build_opener( TripleRedirectHandler(redirects) )
+            opener = urllib2.build_opener(TripleRedirectHandler(redirects))
             request = urllib2.Request(url)
             request.add_header('User-Agent','CC Metadata Scaper http://wiki.creativecommons.org/Metadata_Scraper')
             response = opener.open(request)
@@ -97,20 +96,23 @@ class ScrapeRequestHandler(object):
                 sink = TripleDictSink(redirects)
             
             triples = parser.parse_string(contents, url, sink)
-
+            
             # look for possible predicates to follow
+            if url in triples.keys() and url not in subjects:
+                if url in redirects.keys():
+                    subjects.append(redirects[url])
+                    subjects.append(url)
+            
             for s in triples.keys():
                 if s not in subjects:
                     subjects.append(s)
                 for p in triples[s].keys():
                     if p in FOLLOW_PREDICATES:
-
                         # for each value of the predicate to follow
                         for o in triples[s][p]:
-
                             # follow if we haven't already looked here
                             if o not in subjects:
-                                self._load_source(o, subjects, triples,
+                                self._load_source(o, subjects, sink,
                                                   depth - 1, redirects)
 
         except Exception, e:
@@ -154,7 +156,7 @@ class ScrapeRequestHandler(object):
             action = action,
             referer = web.ctx.environ.get('HTTP_REFERER', '-')
             )
-                
+        
         # parse the RDFa from the document
         triples = self._load_source(url,
                                     depth=depth,
