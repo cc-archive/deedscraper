@@ -1,6 +1,4 @@
 
-YAHOO.namespace("cc");
-
 // **  Parsing/Scraping/Dispatch
 // **
 YAHOO.cc.toggle = function(fieldName, fieldValue) {

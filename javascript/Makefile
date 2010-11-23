@@ -41,7 +41,7 @@ deed-dbg.js: $(JS_FILES)
 	cat $(JS_FILES) > deed-dbg.js
 
 pddeed-dbg.js: src/pd.js
-	cat src/LICENSE src/network.js src/pd.js > pddeed-dbg.js
+	cat src/LICENSE src/header.js src/network.js src/pd.js > pddeed-dbg.js
 
 deed.js: deed-dbg.js
 	java -jar $(YUI_COMPRESS_JAR) deed-dbg.js > deed.js

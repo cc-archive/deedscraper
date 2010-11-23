@@ -25,6 +25,10 @@
  * 
  */
 
+YAHOO.namespace("cc");
+YAHOO.namespace("cc.plus");
+YAHOO.namespace("cc.network");
+YAHOO.namespace("cc.attribution");
 
 // ************************************************************************
 // ************************************************************************
@@ -44,8 +48,6 @@ YAHOO.cc.network.show_info = function(registration) {
      module.show();
  }
 
-
-YAHOO.namespace("cc");
 
 // **  Parsing/Scraping/Dispatch
 // **
