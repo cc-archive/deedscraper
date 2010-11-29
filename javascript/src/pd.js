@@ -29,7 +29,7 @@ YAHOO.cc.success = function (popups) {
     if ( popups.title != null ) 
         YAHOO.cc.toggle('meta_title').innerHTML = popups.title;
     // Display registration information
-    if ( popups.registration != null )
+    if ( popups.registration != '' )
         YAHOO.cc.network.show_info(popups.registration)
     
     if(!cc_zero) {
