@@ -199,24 +199,17 @@ class AttributionMetadataTests (unittest.TestCase):
         self.assertEqual(attrib['attributionURL'], 'http://example.com/copyright')
 
     def test_multiple_attributions(self):
-        """ If multiple attribution assertions exists,
-        return marking information based on the license being requested """
+        """ If multiple attribution assertions exists, blow the fuck up. """
 
         results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_multiple.html',
                                headers=REFERER)
         notices = json.loads(results.body)
-        
-        self.assertEqual(notices['attribution']['marking'], '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/deedscraper/attribution_multiple.html"><a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
-        self.assertEqual(notices['attribution']['details'], 'You must attribute this work to <a href="http://example.com">Example</a> (with link).')
-
+        self.assertEqual(notices['attribution']['marking'], '')
         results = self.app.get('/deed?url=http://code.creativecommons.org/tests/deedscraper/attribution_multiple.html',
                                headers={'Referer': 'http://creativecommons.org/licenses/by-nc/3.0/us/'})
+        
         notices = json.loads(results.body)
-        
-        self.assertEqual(notices['attribution']['marking'], '<div xmlns:cc="http://creativecommons.org/ns#" about="http://code.creativecommons.org/tests/deedscraper/attribution_multiple.html"><a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a> / <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/us/">CC BY-NC 3.0</a></div>')
-        self.assertEqual(notices['attribution']['details'], 'You must attribute this work to <a href="http://example.com">Example</a> (with link).')
-
-        
+        self.assertEqual(notices['attribution']['marking'], '')
 
     def test_attribution_title(self):
         """ Include the dc:title of the work in the attribution information if

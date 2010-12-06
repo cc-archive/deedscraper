@@ -38,22 +38,24 @@ FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
 
 def rdf_accessor(func):
     """ Decorator for functions that serve to check for a set of
-    triples in a particular order for a specific subject. """
+    triples in a particular order for a specific subject.  """
     def check_subject_exists(subject, metadata):
         if subject not in metadata['subjects']:
             return None
-        results = func(subject, metadata)
-        if results: return results[0]
-        return None
-    
+        return func(subject, metadata)
     return check_subject_exists
+
+def unique(objects):
+    if objects and len(objects) == 1:
+        return objects[0]
+    return None
 
 def get_license_uris(subject, metadata):
     """ Return a list of all licenses specified for the subject """
     if subject not in metadata['subjects']: return []
-    return metadata['triples'][subject].get( XHTML('license') ) or \
-           metadata['triples'][subject].get( DCT('license') ) or \
-           metadata['triples'][subject].get( CC('license') ) or \
+    return unique(metadata['triples'][subject].get(XHTML('license'))) or \
+           unique(metadata['triples'][subject].get(DCT('license'))) or \
+           unique(metadata['triples'][subject].get(CC('license'))) or \
            []
 
 @rdf_accessor
@@ -65,38 +67,38 @@ def get_license_uri(subject, metadata):
 @rdf_accessor
 def get_title(subject, metadata):
     """ Returns the dct:title or dc:title for the subject """
-    return metadata['triples'][subject].get( DCT('title') ) or \
-           metadata['triples'][subject].get( DC('title') ) or \
+    return unique(metadata['triples'][subject].get(DCT('title'))) or \
+           unique(metadata['triples'][subject].get(DC('title'))) or \
            None
 
 @rdf_accessor
 def get_creator(subject, metadata):
     """ Returns the dct:creator or dc:creator for the subject. """
-    return metadata['triples'][subject].get( DCT('creator') ) or \
-           metadata['triples'][subject].get( DC('creator') ) or \
-           metadata['triples'][subject].get( CC('attributionURL') ) or \
+    return unique(metadata['triples'][subject].get(DCT('creator'))) or \
+           unique(metadata['triples'][subject].get(DC('creator'))) or \
+           unique(metadata['triples'][subject].get(CC('attributionURL'))) or \
            None
 
 @rdf_accessor
 def get_publisher(subject, metadata):
     """ Returns the dct:publisher or dc:publisher for the subject. """
-    return metadata['triples'][subject].get( DCT('publisher') ) or \
-           metadata['triples'][subject].get( DC('publisher') ) or \
+    return unique(metadata['triples'][subject].get(DCT('publisher'))) or \
+           unique(metadata['triples'][subject].get(DC('publisher'))) or \
            None
 
 @rdf_accessor
 def get_norms(subject, metadata):
     """ Return the uri detailing the norms for this document """
-    return metadata['triples'][subject].get( CC('useGuidelines') ) or \
+    return unique(metadata['triples'][subject].get(CC('useGuidelines'))) or \
            None
 
 @rdf_accessor
 def get_attribution_name(subject, metadata):
-    name = metadata['triples'][subject].get( CC('attributionName') ) 
+    name = unique(metadata['triples'][subject].get(CC('attributionName'))) 
     if not name:
         creator = get_creator(subject, metadata)
         if creator and creator in metadata['subjects']:
-            return metadata['triples'][creator].get( FOAF('name') )
+            return unique(metadata['triples'][creator].get(FOAF('name')))
     return name
 
 ##############################################################
@@ -109,19 +111,14 @@ def get_attribution_name(subject, metadata):
 def match_iriset(metadata, irisets, subject):
 
     for iriset in [metadata['triples'][i] for i in irisets]:
-    
         if iriset.has_key(POWDER('includeregex')):
-
             for regex in iriset[POWDER('includeregex')]:
-
                 if re.compile(regex).search(subject) is None:
                     # the subject didn't match one of the includeregex's
                     return False
 
         if iriset.has_key(POWDER('excluderegex')):
-
             for regex in iriset[POWDER('excluderegex')]:
-
                 if re.compile(regex).search(subject) is not None:
                     # the subject matched one of the excluderegex's
                     return False
@@ -137,11 +134,10 @@ def get_lookup_uri(network, metadata, work_uri):
         return None
 
     for service in metadata['triples'][network][SIOC_SERVICE('has_service')]:
-        
         if service in metadata['subjects'] and \
            metadata['triples'][service].has_key(SIOC_SERVICE('service_protocol')) and \
            cc_protocol_uri in metadata['triples'][service][SIOC_SERVICE('service_protocol')]:
-
+            
             return service + "?uri=" + work_uri
 
     return None
@@ -230,13 +226,8 @@ def attribution(subject, metadata):
     if subject not in metadata['subjects']:
         return attrib
 
-    attribName= get_attribution_name(subject, metadata) or ''
-    attribURL = metadata['triples'][subject].get( CC('attributionURL'), '')
-    
-    if isinstance(attribURL, list): attribURL = attribURL[0]
-    
-    attrib['attributionName'] = attribName
-    attrib['attributionURL'] = attribURL
+    attrib['attributionName'] = get_attribution_name(subject, metadata) or ''
+    attrib['attributionURL'] = unique(metadata['triples'][subject].get(CC('attributionURL'))) or ''
     
     return attrib
 
@@ -258,10 +249,10 @@ def registration(subject, metadata, license_uri):
     
     try:
         # retrieve the relevant information
-        owner = metadata['triples'][subject][SIOC('has_owner')][0]
-        owner_name = metadata['triples'][owner][SIOC('name')][0]
-        network_url = metadata['triples'][owner][SIOC('member_of')][0]
-        network_name = metadata['triples'][network_url][DCT('title')][0]
+        owner = unique(metadata['triples'][subject][SIOC('has_owner')])
+        owner_name = unique(metadata['triples'][owner][SIOC('name')])
+        network_url = unique(metadata['triples'][owner][SIOC('member_of')])
+        network_name = unique(metadata['triples'][network_url][DCT('title')])
 
         lookup_uri = get_lookup_uri(network_url, metadata, subject)
 
@@ -285,20 +276,18 @@ def more_permissions(subject, metadata):
         return {}
 
     morePermURLs = metadata['triples'][subject].get(CC('morePermissions'), '')
-    commLicense = metadata['triples'][subject].get(CC('commercialLicense'), '')
-
-    if isinstance(commLicense, list):
-        commLicense = commLicense[0]
+    commLicense = unique(metadata['triples'][subject].get(CC('commercialLicense'))) or ''
     
     morePermAgent = ''
     if commLicense and commLicense in metadata['subjects'] and \
        metadata['triples'][commLicense].has_key( DCT('publisher') ):
         
-        publisher = metadata['triples'][commLicense][ DCT('publisher') ][0]
-        if metadata['triples'][publisher].has_key( DCT('title') ):
+        publisher = unique(metadata['triples'][commLicense][ DCT('publisher')])
+        if publisher and metadata['triples'][publisher].has_key( DCT('title') ):
             # if there is an available title for the agent,
             # then it'll included in the extra deed permission popup
-            morePermAgent = metadata['triples'][publisher][DCT('title')][0]
+            morePermAgent = unique(metadata['triples'][publisher][DCT('title')]) or ''
+            
     
     # returns a tuple of with ('' or 1list, string, string) sig
     return {
