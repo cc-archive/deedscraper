@@ -29,6 +29,7 @@ DC = lambda part: "http://purl.org/dc/elements/1.1/%s" % part
 DCT = lambda part: "http://purl.org/dc/terms/%s" % part
 XHTML = lambda part: "http://www.w3.org/1999/xhtml/vocab#%s" % part
 FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
+MARCEL = lambda part: "http://id.loc.gov/vocabulary/relators/%s" % part
 
 ################################################################
 ##
@@ -83,6 +84,7 @@ def get_publisher(subject, metadata):
     """ Returns the dct:publisher or dc:publisher for the subject. """
     return metadata['triples'][subject].get( DCT('publisher') ) or \
            metadata['triples'][subject].get( DC('publisher') ) or \
+           metadata['triples'][subject].get( MARCEL('dtc') ) or \
            None
 
 @rdf_accessor
