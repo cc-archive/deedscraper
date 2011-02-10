@@ -65,6 +65,12 @@ def get_title(subject, metadata):
            None
 
 @rdf_accessor
+def get_name(subject, metadata):
+    """ Returns the foaf:name for the subject """
+    return metadata['triples'][subject].get( FOAF('name') ) or \
+           None
+
+@rdf_accessor
 def get_creator(subject, metadata):
     """ Returns the dct:creator or dc:creator for the subject. """
     return metadata['triples'][subject].get( DCT('creator') ) or \
