@@ -1,17 +1,12 @@
 {%- if curator or creator or curator_title or creator_title -%}
 <div xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/" about="{{ work }}">
 {%- if title -%}
-<span property="dct:title">{{ title }}</span> {% endif -%}
+<span property="dct:title">{{ title }}</span> / {% endif -%}
 {%- if creator and creator_title and not creator_literal -%}
-/ <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="{{ creator }}">{{ creator_title }}</a>
-{%- elif creator and not creator_title and not creator_literal -%}
-/ <a rel="cc:attributionURL dct:creator" href="{{ creator }}">{{ creator }}</a>
-{%- elif creator and creator_literal -%}
-/ <span property="dct:creator cc:attributionName">{{ creator_title or creator }}</span>
-{%- endif -%}
+<a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="{{ creator }}">{{ creator_title }}</a> {% elif creator and not creator_title and not creator_literal -%}
+<a rel="cc:attributionURL dct:creator" href="{{ creator }}">{{ creator }}</a> {% elif creator and creator_literal -%}
+<span property="dct:creator cc:attributionName">{{ creator_title or creator }}</span> {% endif -%}
 {%- if curator and not curator_literal -%}
-(<a rel="cc:attributionURL dct:publisher" href="{{ curator }}">{{ curator_title or curator }}</a>)
-{%- elif curator and curator_literal -%}
-(<span property="dct:publisher">{{ curator_title or curator }}</span>)
-{%- endif %} / <a rel="license" href="{{ mark_uri }}">{{ mark_title }}</a></div>
+(<a rel="cc:attributionURL dct:publisher" href="{{ curator }}">{{ curator_title or curator }}</a>) {% elif curator and curator_literal -%}
+(<span property="dct:publisher">{{ curator_title or curator }}</span>) {% endif %}/ <a rel="license" href="{{ mark_uri }}">{{ mark_title }}</a></div>
 {%- endif -%}
