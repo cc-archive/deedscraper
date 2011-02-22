@@ -6,7 +6,7 @@
 {%- elif attributionURL and attributionName and not title -%}  
     <a rel="cc:attributionURL" property="cc:attributionName" href="{{ attributionURL}}">{{ attributionName }}</a>
 {%- elif attributionURL and not attributionName and title -%}
-    <a rel="cc:attributionURL" href="{{ attributionURL}}"><span property="dct:title">{{ title }}</span></a>
+    <a rel="cc:attributionURL" property="dct:title" href="{{ attributionURL}}">{{ title }}</a>
 {%- elif attributionURL and not attributionName and not title -%}
     <a rel="cc:attributionURL" href="{{ attributionURL}}">{{ attributionURL }}</a>
 {%- elif not attributionURL and attributionName and title -%} 

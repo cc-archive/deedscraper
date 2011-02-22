@@ -29,6 +29,7 @@ DC = lambda part: "http://purl.org/dc/elements/1.1/%s" % part
 DCT = lambda part: "http://purl.org/dc/terms/%s" % part
 XHTML = lambda part: "http://www.w3.org/1999/xhtml/vocab#%s" % part
 FOAF = lambda part: "http://xmlns.com/foaf/0.1/%s" % part
+MARCEL = lambda part: "http://id.loc.gov/vocabulary/relators/%s" % part
 
 ################################################################
 ##
@@ -72,6 +73,12 @@ def get_title(subject, metadata):
            None
 
 @rdf_accessor
+def get_name(subject, metadata):
+    """ Returns the foaf:name for the subject """
+    return metadata['triples'][subject].get( FOAF('name') ) or \
+           None
+
+@rdf_accessor
 def get_creator(subject, metadata):
     """ Returns the dct:creator or dc:creator for the subject. """
     return unique(metadata['triples'][subject].get(DCT('creator'))) or \
@@ -82,8 +89,9 @@ def get_creator(subject, metadata):
 @rdf_accessor
 def get_publisher(subject, metadata):
     """ Returns the dct:publisher or dc:publisher for the subject. """
-    return unique(metadata['triples'][subject].get(DCT('publisher'))) or \
-           unique(metadata['triples'][subject].get(DC('publisher'))) or \
+    return unique(metadata['triples'][subject].get( DCT('publisher'))) or \
+           unique(metadata['triples'][subject].get( DC('publisher'))) or \
+           unique(metadata['triples'][subject].get( MARCEL('dtc'))) or \
            None
 
 @rdf_accessor

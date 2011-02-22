@@ -221,7 +221,7 @@ class AttributionMetadataTests (unittest.TestCase):
         self.assertEqual(notices['attribution']['marking'],
                          '<div xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/" about="http://code.creativecommons.org/tests/deedscraper/attribution_title.html"><span property="dct:title">Example Title</span> (<a rel="cc:attributionURL" property="cc:attributionName" href="http://example.com">Example</a>) / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0</a></div>')
         self.assertEqual(notices['attribution']['details'],
-                         'You must attribute Example Title to <a href="http://example.com">Example</a> (with link).')
+                         'You must attribute <a href="http://code.creativecommons.org/tests/deedscraper/attribution_title.html">Example Title</a> to <a href="http://example.com">Example</a> (with link).')
 
     def test_extract_dc_title(self):
         """ dc:title should be extractable via metadata.get_title

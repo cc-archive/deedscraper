@@ -23,6 +23,7 @@ import cc.license
 import cc.license.selectors
 import web
 import cgi
+from urlparse import urlparse
 import support
 import metadata
 import renderer
@@ -212,33 +213,44 @@ class PublicDomainReferer(RefererHandler):
 
         # empty values are represented by None
         results = {
+            'waiver': cc0,
+            'registration': renderer.render('registration.html', regist),
             'title': metadata.get_title(self.subject, self.triples),
+            'norms': metadata.get_norms(self.subject, self.triples),
             'curator': metadata.get_publisher(self.subject, self.triples),
             'creator': metadata.get_creator(self.subject, self.triples),
-            'norms': metadata.get_norms(self.subject, self.triples),
-            'waiver': cc0,
+            'curator_title': '',
+            'creator_title': '',
+            'curator_literal': '',
+            'creator_literal': '',
             }
-        
-        results.update({
-            'curator_title': metadata.get_title(results['curator'], self.triples),
-            'creator_title': metadata.get_title(results['creator'], self.triples),
-            })
 
-        # escape and strip whitespaces
-        results = dict(
-            map(lambda (k,v):
-                (k,v and ' '.join(''.join(cgi.escape(v).split('\\n')).split())),
-                results.items())
-            )
+        results['curator_title'] = metadata.get_title(results['curator'], self.triples) or \
+                                   metadata.get_name(results['curator'], self.triples)
+        results['creator_title'] = metadata.get_title(results['creator'], self.triples) or \
+                                   metadata.get_name(results['creator'], self.triples)
+
+        if results['curator'] and not (
+            urlparse(results['curator']).scheme and \
+            urlparse(results['curator']).netloc):
+            results['curator_literal'] = True
         
-        results.update({
-            'marking': renderer.render('pd_marking.html',
-                                       dict(results,
-                                        work=self.subject,
-                                        mark_uri=self.cclicense.uri,
-                                        mark_title=self.cclicense.title(self.lang))),
-            'registration': renderer.render('registration.html', regist),
-            })
+        if results['creator'] and not (
+            urlparse(results['creator']).scheme and \
+            urlparse(results['curator']).netloc):
+            results['creator_literal'] = True
+            
+        # escape and strip whitespaces
+        for k,v in results.items():
+            if type(v) in (str, unicode):
+                results[k] = ' '.join(''.join(cgi.escape(v).split('\\n')).split())
+
+        results['marking'] = renderer.render(
+            'pd_marking.html',
+            dict(results,
+                 work=self.subject,
+                 mark_uri=self.cclicense.uri,
+                 mark_title=self.cclicense.title(self.lang)))
         
         return results
 

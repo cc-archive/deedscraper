@@ -1,7 +1,7 @@
 {%- if attributionName and attributionURL -%}
 {%- if title -%}
 {%- trans attributionName=attributionName, attributionURL -%}
-You must attribute {{ title }} to <a href="{{ attributionURL }}">{{ attributionName }}</a> (with link).
+You must attribute <a href="{{ subject }}">{{ title }}</a> to <a href="{{ attributionURL }}">{{ attributionName }}</a> (with link).
 {%- endtrans -%}
 {%- else -%}
 {%- trans attributionName=attributionName, attributionURL -%}
