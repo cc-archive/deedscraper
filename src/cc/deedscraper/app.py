@@ -221,25 +221,25 @@ class PublicDomainReferer(RefererHandler):
             'creator': metadata.get_creator(self.subject, self.triples),
             'curator_title': '',
             'creator_title': '',
-            'curator_literal': '',
-            'creator_literal': '',
+            'curator_literal': False,
+            'creator_literal': False,
             }
 
         results['curator_title'] = metadata.get_title(results['curator'], self.triples) or \
                                    metadata.get_name(results['curator'], self.triples)
         results['creator_title'] = metadata.get_title(results['creator'], self.triples) or \
                                    metadata.get_name(results['creator'], self.triples)
-
-        if results['curator'] and not (
-            urlparse(results['curator']).scheme and \
-            urlparse(results['curator']).netloc):
+        
+        if results['curator'] and not \
+               (urlparse(results['curator']).scheme and \
+                urlparse(results['curator']).netloc):
             results['curator_literal'] = True
         
-        if results['creator'] and not (
-            urlparse(results['creator']).scheme and \
-            urlparse(results['curator']).netloc):
+        if results['creator'] and  not \
+               (urlparse(results['creator']).scheme and \
+                urlparse(results['creator']).netloc):
             results['creator_literal'] = True
-            
+        
         # escape and strip whitespaces
         for k,v in results.items():
             if type(v) in (str, unicode):
