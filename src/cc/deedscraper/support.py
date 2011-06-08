@@ -122,6 +122,6 @@ def barf_if_not_http(url):
 
     ie, prevent us from opening file:// links.
     """
-    if urlparse(url)[0] not in ('http', 'https'):
+    if urlparse(url)[0] not in ('http', 'https', ''):
         raise NotHttpError(
             "url not in form http:// or https://, refusing to open")
