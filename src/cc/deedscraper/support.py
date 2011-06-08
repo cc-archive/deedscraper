@@ -24,6 +24,7 @@ import os
 import logging
 import logging.config
 import urllib2
+import urlparse
 import lxml.etree
 from StringIO import StringIO
 from urllib import urlencode
@@ -57,6 +58,8 @@ def get_document_locale(url):
     >>> print get_document_locale('http://code.creativecommons.org/tests/metadata_scraper/')
     None
     """ 
+    barf_if_not_http(url)
+
     try:
         doc =  urllib2.urlopen(url)
         data = StringIO(doc.read())
@@ -75,6 +78,7 @@ def add_qs_parameter(url, key, value):
     >>> add_qs_parameter('http://localhost/example?test=example', 'foo', 'bar')
     'http://localhost/example?test=example&foo=bar'
     """
+    barf_if_not_http(url)
 
     url = urlparse(url)
     query = parse_qs(url.query)
@@ -99,6 +103,8 @@ def get_permissions_link(url):
     >>> get_permissions_link('should return null string')
     'should return null string'
     """
+    barf_if_not_http(url)
+
     parsed = urlparse(url)
     if parsed.scheme in ['http', 'https']:
         return parsed.netloc
@@ -106,3 +112,16 @@ def get_permissions_link(url):
         return parsed.path
     else:
         return url
+
+
+class NotHttpError(Exception): pass
+
+def barf_if_not_http(url):
+    """
+    If a url is not http:// or https://, we shouldn't open it!
+
+    ie, prevent us from opening file:// links.
+    """
+    if urlparse(url)[0] not in ('http', 'https'):
+        raise NotHttpError(
+            "url not in form http:// or https://, refusing to open")
