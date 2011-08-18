@@ -32,6 +32,7 @@ requires = ['setuptools',
             'cc.license',
             'lxml',
             'rdflib<3.0',
+            'PasteScript',
             ]
 
 if sys.version_info < (2, 6):
