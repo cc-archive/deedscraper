@@ -79,16 +79,17 @@ class RefererHandler(ScrapeRequestHandler):
             raise Exception("A license URI and a subject URI must be provided.")
         
         if license_uri not in self.LICENSES.keys():
-            try:
-                if 'deed' in license_uri:
-                    stripped_uri = license_uri[:(license_uri.rindex('/')+1)]
-                    cclicense = cc.license.by_uri(str(stripped_uri))
-                else:
-                    cclicense = cc.license.by_uri(str(license_uri))
-            except cc.license.CCLicenseError, e:
+            cclicense = None
+            if 'deed' in license_uri:
+                stripped_uri = license_uri[:(license_uri.rindex('/')+1)]
+                cclicense = cc.license.by_uri(str(stripped_uri))
+            else:
+                cclicense = cc.license.by_uri(str(license_uri))
+            if not cclicense:
                 raise Exception("Invalid license URI.")
-            # cache the cc.license object so we dont have to fetch it again
-            self.LICENSES[license_uri] = cclicense
+            else:
+                # cache the cc.license object so we dont have to fetch it again
+                self.LICENSES[license_uri] = cclicense
         
         # deeds include a lang attribute in <html>
         if license_uri not in self.LANGS.keys():
