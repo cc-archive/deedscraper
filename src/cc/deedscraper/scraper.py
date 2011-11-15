@@ -95,7 +95,6 @@ class ScrapeRequestHandler(object):
             if sink is None:
                 sink = TripleDictSink(redirects)
             
-            #### this is the problematic part
             triples = parser.parse_string(contents, url, sink)
             
             # look for possible predicates to follow
