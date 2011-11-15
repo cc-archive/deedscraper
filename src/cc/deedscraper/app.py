@@ -73,9 +73,9 @@ class RefererHandler(ScrapeRequestHandler):
         url = web.input().get('url', None)
         license_uri = web.input().get('license_uri') or \
                       web.ctx.env.get('HTTP_REFERER', None)
-        
+
         if license_uri is None or url is None or \
-           not license_uri.startswith('http://creativecommons.org/'):
+                not license_uri.startswith('http://creativecommons.org/'):
             raise Exception("A license URI and a subject URI must be provided.")
         
         if license_uri not in self.LICENSES.keys():

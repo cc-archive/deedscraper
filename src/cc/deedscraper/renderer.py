@@ -62,5 +62,5 @@ def render(template, context, locale=None):
     return template.render(**context)
     
 def response(data):
-    web.header("Content-Type", "text/javascript")
-    return json.dumps(data)
+    web.header("Content-Type", "text/javascript; charset=utf-8")
+    return json.dumps(data, ensure_ascii=False)

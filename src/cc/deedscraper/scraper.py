@@ -92,7 +92,7 @@ class ScrapeRequestHandler(object):
             request.add_header('User-Agent','CC Metadata Scaper http://wiki.creativecommons.org/Metadata_Scraper')
             response = opener.open(request)
             contents = response.read()
-            
+
             # default to a set-based triple sink
             if sink is None:
                 sink = TripleDictSink(redirects)
@@ -119,7 +119,7 @@ class ScrapeRequestHandler(object):
 
         except Exception, e:
             triples = {'_exception': str(e)}
-
+            
         return triples
 
     def _first_pass(self, url, action='triples'):
