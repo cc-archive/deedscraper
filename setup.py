@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 import sys
 
 requires = ['setuptools',
-            'rdfadict==0.7',
+            'rdfadict',
             'web.py',
             'Jinja2',
             'decorator',
