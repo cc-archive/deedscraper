@@ -40,7 +40,7 @@ if sys.version_info < (2, 6):
 
 setup(
     name = "cc.deedscraper",
-    version = "0.3",
+    version = "0.3.2",
 
     packages = ['cc.deedscraper'],
     namespace_packages = ['cc'],
