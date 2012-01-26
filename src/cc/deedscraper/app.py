@@ -205,12 +205,17 @@ class PublicDomainReferer(RefererHandler):
     def results(self):
         """ Process the scraped triples for the deed. """
         
-        # extra all license relations to check for dual-licensing
+        def cc0_filter(license_name):
+            return CC0_SELECTOR.has_license(str(license_name))
+
+        # look through all license relations to check for dual-licensing
         licenses = metadata.get_license_uri(self.subject, self.triples) or []
-        cc0 = filter(lambda l: CC0_SELECTOR.has_license(l), licenses) or None
-        if cc0: cc0 = cc0[0]
+        if type(licenses) in (str, unicode):
+            licenses = [licenses]
+        cc0 = (filter(cc0_filter, licenses) or [None])[0]
         
-        regist = metadata.registration(self.subject, self.triples, self.license_uri)
+        regist = metadata.registration(
+            self.subject, self.triples, self.license_uri)
 
         # empty values are represented by None
         results = {

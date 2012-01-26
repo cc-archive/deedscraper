@@ -26,7 +26,7 @@ import logging
 
 from copy import deepcopy
 from decorator import decorator
-from support import LOG
+from support import LOG, barf_if_not_http
 
 from rdfadict.sink import DictSetTripleSink
 
@@ -71,6 +71,8 @@ class ScrapeRequestHandler(object):
 
     def _load_source(self, url, subjects=None, sink=None,
                      depth=2, redirects=None):
+        barf_if_not_http(url)
+
         # bail out if we've hit the parsing limit
         if depth < 0:
             return sink
@@ -121,7 +123,6 @@ class ScrapeRequestHandler(object):
         return triples
 
     def _first_pass(self, url, action='triples'):
-
         redirects = {}
         subjects = []
         sink = TripleDictSink(redirects)
