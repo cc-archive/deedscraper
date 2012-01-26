@@ -32,6 +32,7 @@ requires = ['setuptools',
             'cc.license',
             'lxml',
             'rdflib<3.0',
+            'python-gettext<2.0',
             ]
 
 if sys.version_info < (2, 6):
