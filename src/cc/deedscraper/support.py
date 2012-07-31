@@ -64,7 +64,7 @@ def get_document_locale(url):
         doc =  urllib2.urlopen(url)
         data = StringIO(doc.read())
         tree = lxml.etree.parse(data, lxml.etree.HTMLParser())
-        return tree.getroot().get('lang', None)
+        return tree.getroot().get('xml:lang', None) or tree.getroot().get('lang', None)
     except: return None # catch shit from StringIO, urllib, or lxml
 
 def add_qs_parameter(url, key, value):
