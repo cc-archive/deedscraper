@@ -8,3 +8,7 @@ downloads
 eggs
 parts
 *.egg-info
+.coverage
+access.log
+metadata.log
+nosetests.xml
