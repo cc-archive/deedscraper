@@ -78,6 +78,3 @@ An interactive console can be access by running::
   $ ./bin/zdaemon -C scraper_zd.conf
 
 Type ``help`` within the console to see a full list of available commands.
-
-
-
